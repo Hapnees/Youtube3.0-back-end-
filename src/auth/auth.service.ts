@@ -99,8 +99,8 @@ export class AuthService {
 
 	async issueToken(userId: number) {
 		return await this.jwtService.signAsync(
-			{ id: userId },
-			{ expiresIn: this.configService.get('JWT_EXPIRES_IN') }
+			{ id: userId }
+			// { expiresIn: this.configService.get('JWT_EXPIRES_IN') }
 		)
 	}
 }
