@@ -24,17 +24,17 @@ export class AuthService {
 		private readonly configService: ConfigService
 	) {}
 
-	async refresh(userId: number) {
-		const _user = await this.userRepo.findOneBy({ id: userId })
-		if (!_user) throw new NotFoundException('Пользователь не найден')
+	// async refresh(userId: number) {
+	// 	const _user = await this.userRepo.findOneBy({ id: userId })
+	// 	if (!_user) throw new NotFoundException('Пользователь не найден')
 
-		const { createdAt, updatedAt, ...rest } = _user
+	// 	const { createdAt, updatedAt, ...rest } = _user
 
-		return {
-			...rest,
-			token: await this.issueToken(_user.id)
-		}
-	}
+	// 	return {
+	// 		...rest,
+	// 		token: await this.issueToken(_user.id)
+	// 	}
+	// }
 
 	async register(user: AuthRegisterGetDto): Promise<AuthRegisterSendDto> {
 		const errors: string[] = []
@@ -79,7 +79,7 @@ export class AuthService {
 
 		const _user = await this.userRepo.findOne({
 			where: { email: user.email },
-			select: ['id', 'username', 'email', 'password']
+			select: ['id', 'username', 'email', 'password', 'avatarPath']
 		})
 		if (!_user) throw new NotFoundException('Пользователь не найден')
 

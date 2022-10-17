@@ -4,6 +4,8 @@ import { TypeOrmModule } from '@nestjs/typeorm'
 import { getTypeOrmConfig } from './config/postgres.config'
 import { UserModule } from './user/user.module'
 import { AuthModule } from './auth/auth.module'
+import { MediaModule } from './media/media.module'
+import { VideoModule } from './video/video.module';
 
 @Module({
 	imports: [
@@ -14,7 +16,9 @@ import { AuthModule } from './auth/auth.module'
 			useFactory: getTypeOrmConfig
 		}),
 		UserModule,
-		AuthModule
+		AuthModule,
+		MediaModule,
+		VideoModule
 	],
 	controllers: [],
 	providers: []

@@ -33,12 +33,12 @@ export class AuthController {
 		return this.authService.login(user)
 	}
 
-	@Post('refresh')
-	@HttpCode(200)
-	@Auth()
-	async refresh(@CurrentUser() userId: number) {
-		return await this.authService.refresh(userId)
-	}
+	// @Post('refresh')
+	// @HttpCode(200)
+	// @Auth()
+	// async refresh(@CurrentUser() userId: number) {
+	// 	return await this.authService.refresh(userId)
+	// }
 
 	// @Get('test')
 	// @Auth()

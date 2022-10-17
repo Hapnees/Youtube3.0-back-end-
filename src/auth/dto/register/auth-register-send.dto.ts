@@ -1,4 +1,10 @@
-import { IsEmail, IsNotEmpty, IsNumber, IsString } from 'class-validator'
+import {
+	IsEmail,
+	IsNotEmpty,
+	IsNumber,
+	IsOptional,
+	IsString
+} from 'class-validator'
 
 export class AuthRegisterSendDto {
 	@IsNumber({}, { message: 'Некорректный id' })
@@ -14,4 +20,7 @@ export class AuthRegisterSendDto {
 	@IsString({ message: 'Некорректный токен' })
 	@IsNotEmpty({ message: 'Токен не может быть пустым' })
 	token: string
+
+	@IsString({ message: 'Некорректный формат аватара' })
+	avatarPath: string
 }
