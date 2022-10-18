@@ -13,6 +13,14 @@ export class VideoService {
 		private readonly videoRepo: Repository<VideoEntity>
 	) {}
 
+	async searchVideos(value: string) {
+		const videos = await this.videoRepo.query(
+			`SELECT pp.*, p.username, p.avatar_path FROM "Video" pp LEFT JOIN "User" p ON p.id=pp.user_id WHERE pp.is_private=FALSE AND pp.title ~* \'${value}\' ORDER BY pp.views`
+		)
+
+		return videos
+	}
+
 	async addVideo(video: VideoGetDto) {
 		await this.videoRepo.save(video)
 
@@ -62,20 +70,35 @@ export class VideoService {
 
 	async getVideos() {
 		const videos = await this.videoRepo.query(
-			'SELECT pp.*, p.username, p.avatar_path FROM "Video" pp LEFT JOIN "User" p ON p.id=pp.user_id WHERE pp.is_private=FALSE ORDER BY pp.created_at LIMIT 10;'
+			'SELECT pp.*, json_build_object(\'username\', p.username, \'avatar_path\', p.avatar_path) AS "user" FROM "Video" pp LEFT JOIN "User" p ON p.id=pp.user_id WHERE pp.is_private=FALSE ORDER BY pp.created_at LIMIT 10;'
 		)
 
 		return videos
 	}
 
 	async getVideoById(id: number) {
-		const _video = await this.videoRepo.findOne({
-			where: { id },
-			relations: { user: true }
-		})
+		const _video = await this.videoRepo.query(
+			`SELECT
+  _video.*,
+  json_build_object(
+    'username',
+    _author.username,
+    'avatar_path',
+    _author.avatar_path
+  ) as "user"
+FROM
+  "Video" _video
+  LEFT JOIN "User" _author ON _video.user_id = _author.id
+WHERE
+  _video.id = ${id}
+GROUP BY
+  (_video.id, _author.username, _author.avatar_path)`
+		)
 
 		if (!_video) throw new NotFoundException('Видео не найдено')
 
-		return _video
+		const result = _video[0]
+
+		return result
 	}
 }

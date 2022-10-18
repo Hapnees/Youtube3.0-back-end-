@@ -18,6 +18,11 @@ import { VideoService } from './video.service'
 export class VideoController {
 	constructor(private readonly videoService: VideoService) {}
 
+	@Get('search')
+	searchVideos(@Query('search') value: string) {
+		return this.videoService.searchVideos(value)
+	}
+
 	@Post('add')
 	@HttpCode(200)
 	@Auth()

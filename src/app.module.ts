@@ -6,6 +6,7 @@ import { UserModule } from './user/user.module'
 import { AuthModule } from './auth/auth.module'
 import { MediaModule } from './media/media.module'
 import { VideoModule } from './video/video.module';
+import { CommentModule } from './comment/comment.module';
 
 @Module({
 	imports: [
@@ -18,7 +19,8 @@ import { VideoModule } from './video/video.module';
 		UserModule,
 		AuthModule,
 		MediaModule,
-		VideoModule
+		VideoModule,
+		CommentModule
 	],
 	controllers: [],
 	providers: []

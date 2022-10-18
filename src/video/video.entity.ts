@@ -1,6 +1,7 @@
+import { CommentEntity } from 'src/comment/comment.entity'
 import { GenericEntity } from 'src/generic/generic.entity'
 import { UserEntity } from 'src/user/user.entity'
-import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm'
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm'
 
 @Entity('Video')
 export class VideoEntity extends GenericEntity {
@@ -40,4 +41,7 @@ export class VideoEntity extends GenericEntity {
 	})
 	@JoinColumn({ name: 'user_id' })
 	user: UserEntity
+
+	@OneToMany(() => CommentEntity, comment => comment.video)
+	comments: CommentEntity[]
 }

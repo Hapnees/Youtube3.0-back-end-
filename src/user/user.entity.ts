@@ -1,3 +1,4 @@
+import { CommentEntity } from 'src/comment/comment.entity'
 import { GenericEntity } from 'src/generic/generic.entity'
 import { VideoEntity } from 'src/video/video.entity'
 import { Column, Entity, OneToMany } from 'typeorm'
@@ -24,4 +25,7 @@ export class UserEntity extends GenericEntity {
 
 	@OneToMany(() => VideoEntity, video => video.user)
 	videos: VideoEntity[]
+
+	@OneToMany(() => CommentEntity, comment => comment.user)
+	comments: CommentEntity[]
 }
