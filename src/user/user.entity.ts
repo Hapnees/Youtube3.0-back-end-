@@ -23,6 +23,18 @@ export class UserEntity extends GenericEntity {
 	@Column({ name: 'header_path', default: '', nullable: true })
 	headerPath?: string
 
+	@Column('int', { name: 'video_liked_id', array: true, default: [] })
+	videoLikedId: number[]
+
+	@Column('int', { name: 'video_disliked_id', array: true, default: [] })
+	videoDislikedId: number[]
+
+	@Column('int', { name: 'comment_liked_id', array: true, default: [] })
+	commentLikedId: number[]
+
+	@Column('int', { name: 'comment_disliked_id', array: true, default: [] })
+	commentDislikedId: number[]
+
 	@OneToMany(() => VideoEntity, video => video.user)
 	videos: VideoEntity[]
 

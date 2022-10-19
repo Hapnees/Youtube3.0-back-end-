@@ -5,11 +5,13 @@ import {
 	Get,
 	HttpCode,
 	ParseIntPipe,
+	Patch,
 	Post,
 	Put,
 	Query
 } from '@nestjs/common'
 import { Auth } from 'src/auth/decorators/auth.decorator'
+import { CurrentUser } from 'src/user/decorators/current-user.decorator'
 import { VideoGetDto } from './dto/video-get.dto'
 import { VideoUpdateDto } from './dto/video-update.dto'
 import { VideoService } from './video.service'
@@ -17,6 +19,20 @@ import { VideoService } from './video.service'
 @Controller('video')
 export class VideoController {
 	constructor(private readonly videoService: VideoService) {}
+
+	@Patch('dislike/add')
+	@HttpCode(200)
+	@Auth()
+	dislike(@CurrentUser() userId: number, @Body() { id }: { id: number }) {
+		return this.videoService.dislike(userId, id)
+	}
+
+	@Patch('like/add')
+	@HttpCode(200)
+	@Auth()
+	like(@CurrentUser() userId: number, @Body() { id }: { id: number }) {
+		return this.videoService.like(userId, id)
+	}
 
 	@Get('search')
 	searchVideos(@Query('search') value: string) {

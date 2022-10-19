@@ -55,6 +55,7 @@ export class UserService {
 		const _user = await this.userRepo.findOne({
 			where: { id: userId },
 			select: [
+				'id',
 				'username',
 				'email',
 				'description',
@@ -69,7 +70,7 @@ export class UserService {
 		if (userData.password)
 			userData.password = await bcrypt.hash(userData.password, 12)
 
-		await this.userRepo.update(_user, userData)
+		await this.userRepo.update(_user.id, userData)
 
 		return {
 			username: _user.username,

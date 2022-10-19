@@ -8,15 +8,18 @@ export class CommentEntity extends GenericEntity {
 	@Column()
 	title: string
 
-	@ManyToOne(() => UserEntity, user => user.comments)
+	@ManyToOne(() => UserEntity, user => user.comments, {
+		onUpdate: 'CASCADE',
+		onDelete: 'CASCADE'
+	})
 	@JoinColumn({ name: 'user_id' })
 	user: UserEntity
 
-	@Column({ default: 0 })
-	likes: number
+	@Column('int', { default: [], array: true })
+	likes: number[]
 
-	@Column({ default: 0 })
-	dislikes: number
+	@Column('int', { default: [], array: true })
+	dislikes: number[]
 
 	@ManyToOne(() => VideoEntity, video => video.comments, {
 		onUpdate: 'CASCADE',

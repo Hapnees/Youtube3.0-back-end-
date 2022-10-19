@@ -3,6 +3,7 @@ import {
 	Controller,
 	Get,
 	HttpCode,
+	Patch,
 	Post,
 	Query,
 	UsePipes,
@@ -15,6 +16,22 @@ import { CommentGetDto } from './dto/comment-get.dto'
 @Controller('comment')
 export class CommentController {
 	constructor(private readonly commentService: CommentService) {}
+
+	@Patch('dislike')
+	@Auth()
+	@HttpCode(200)
+	dislike(
+		@Body() { userId, commentId }: { userId: number; commentId: number }
+	) {
+		return this.commentService.dislike(userId, commentId)
+	}
+
+	@Patch('like')
+	@Auth()
+	@HttpCode(200)
+	like(@Body() { userId, commentId }: { userId: number; commentId: number }) {
+		return this.commentService.like(userId, commentId)
+	}
 
 	@Post('add')
 	@UsePipes(new ValidationPipe())
