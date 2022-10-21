@@ -35,6 +35,12 @@ export class UserEntity extends GenericEntity {
 	@Column('int', { name: 'comment_disliked_id', array: true, default: [] })
 	commentDislikedId: number[]
 
+	@Column('int', { array: true, default: [] })
+	subscribers: number[]
+
+	@Column('int', { array: true, default: [] })
+	subscriptions: number[]
+
 	@OneToMany(() => VideoEntity, video => video.user)
 	videos: VideoEntity[]
 

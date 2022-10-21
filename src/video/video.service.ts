@@ -20,6 +20,16 @@ export class VideoService {
 		private readonly userRepo: Repository<UserEntity>
 	) {}
 
+	async updateViews(videoId: number) {
+		const _video = await this.videoRepo.findOneBy({ id: videoId })
+
+		if (!_video) throw new NotFoundException('Видео не найдено')
+
+		await this.videoRepo.update(videoId, { views: _video.views + 1 })
+
+		return { message: 'Просмотры обновлены' }
+	}
+
 	async dislike(userId: number, id: number) {
 		const _video = await this.videoRepo.findOneBy({ id })
 
@@ -96,12 +106,18 @@ export class VideoService {
 		}
 	}
 
-	async searchVideos(value: string) {
+	async searchVideos(value: string, limit: number = 12, page: number = 1) {
+		const offset = limit * (page - 1)
 		const videos = await this.videoRepo.query(
-			`SELECT pp.*, json_build_object(\'username\', p.username, \'avatar_path\', p.avatar_path) AS "user" FROM "Video" pp LEFT JOIN "User" p ON p.id=pp.user_id WHERE pp.is_private=FALSE AND pp.title ~* \'${value}\' ORDER BY pp.views`
+			`SELECT pp.*, json_build_object('username', p.username, 'avatar_path', p.avatar_path) AS "user" FROM "Video" pp LEFT JOIN "User" p ON p.id=pp.user_id WHERE pp.is_private=FALSE AND pp.title ~* '${value}' ORDER BY pp.views LIMIT ${limit} OFFSET ${offset}`
 		)
 
-		return videos
+		const totalPages = Math.ceil(
+			(await this.videoRepo.query(`SELECT COUNT(*) FROM "Video"`))[0].count /
+				limit
+		)
+
+		return { videos, total_pages: totalPages }
 	}
 
 	async addVideo(video: VideoGetDto) {
@@ -151,23 +167,104 @@ export class VideoService {
 		}
 	}
 
-	async getVideos() {
-		const videos = await this.videoRepo.query(
-			'SELECT pp.*, json_build_object(\'username\', p.username, \'avatar_path\', p.avatar_path) AS "user" FROM "Video" pp LEFT JOIN "User" p ON p.id=pp.user_id WHERE pp.is_private=FALSE ORDER BY pp.created_at LIMIT 10;'
+	async getVideosTrends(limit: number = 12, page: number = 1) {
+		const offset = limit * (page - 1)
+		const _videos = await this.videoRepo.query(`
+			SELECT pp.*, json_build_object('username', p.username, 'avatar_path', p.avatar_path) AS "user" FROM "Video" pp LEFT JOIN "User" p ON p.id=pp.user_id WHERE pp.is_private=FALSE ORDER BY pp.views DESC LIMIT ${limit} OFFSET ${offset};
+`)
+
+		const totalPages = Math.ceil(
+			(await this.videoRepo.query(`SELECT COUNT(*) FROM "Video"`))[0].count /
+				limit
 		)
 
-		return videos
+		return { videos: _videos, total_pages: totalPages }
 	}
 
-	async getVideoById(id: number) {
+	async getProfileVideosByUsername(username: string) {
+		const _user = await this.userRepo.findOneBy({ username })
+
+		if (!_user) throw new NotFoundException('Пользователь не найден')
+		const _videos = await this.videoRepo.query(`SELECT
+		_video.id,
+		_video.user_id,
+		_video.title,
+    _video.duration,
+    _video.views,
+    _video.created_at,
+		_video.is_private,
+    _video.thumbnail_path
+FROM
+  "Video" _video
+WHERE
+  _video.user_id = ${_user.id} AND
+	_video.is_private = false
+ORDER BY
+  _video.created_at DESC
+`)
+
+		if (!_videos) throw new NotFoundException('Ошибка поиска видео')
+
+		return _videos
+	}
+
+	async getProfileVideos(userId: number) {
+		const _videos = await this.videoRepo.query(`SELECT
+		_video.id,
+		_video.title,
+    _video.duration,
+    _video.views,
+    _video.created_at,
+		_video.is_private,
+    _video.thumbnail_path
+FROM
+  "Video" _video
+WHERE
+  _video.user_id = ${userId}
+ORDER BY
+  _video.created_at DESC
+`)
+
+		if (!_videos) throw new NotFoundException('Пользователь не найден')
+
+		return _videos
+	}
+
+	async getVideos(limit: number = 12, page: number = 1) {
+		const offset = limit * (page - 1)
+		const videos = await this.videoRepo.query(
+			`SELECT pp.*, 
+			json_build_object('username', p.username, 'avatar_path', p.avatar_path) AS "user"
+			FROM "Video" pp 
+			LEFT JOIN "User" p
+			 ON p.id=pp.user_id 
+			 WHERE pp.is_private=FALSE 
+			 ORDER BY pp.created_at DESC 
+			 LIMIT ${limit} OFFSET ${offset}
+			 `
+		)
+
+		const totalPages = Math.ceil(
+			(await this.videoRepo.query(`SELECT COUNT(*) FROM "Video"`))[0].count /
+				limit
+		)
+
+		return { videos, total_pages: totalPages }
+	}
+
+	async getVideoById(idFrom: number = 0, id: number) {
 		const _video = await this.videoRepo.query(
 			`SELECT
   _video.*,
   json_build_object(
+		'id',
+		_author.id,
     'username',
     _author.username,
     'avatar_path',
     _author.avatar_path,
+		'is_subscribed',
+		(${idFrom} = ANY(_author.subscribers)),
     'is_liked',
     (SELECT true FROM "User" WHERE ${id} = ANY(video_liked_id)),
 		'is_disliked',
@@ -179,10 +276,11 @@ FROM
 WHERE
   _video.id = ${id}
 GROUP BY
-  (_video.id, _author.username, _author.avatar_path)`
+  (_video.id, _author.username, _author.avatar_path, _author.id)`
 		)
 
 		if (!_video) throw new NotFoundException('Видео не найдено')
+		// console.log(id)
 
 		const result = _video[0]
 

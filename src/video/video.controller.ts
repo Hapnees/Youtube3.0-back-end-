@@ -4,6 +4,7 @@ import {
 	Delete,
 	Get,
 	HttpCode,
+	Param,
 	ParseIntPipe,
 	Patch,
 	Post,
@@ -20,6 +21,12 @@ import { VideoService } from './video.service'
 export class VideoController {
 	constructor(private readonly videoService: VideoService) {}
 
+	@Patch('views')
+	@HttpCode(200)
+	updateViews(@Body() { videoId }: { videoId: number }) {
+		return this.videoService.updateViews(videoId)
+	}
+
 	@Patch('dislike/add')
 	@HttpCode(200)
 	@Auth()
@@ -35,8 +42,12 @@ export class VideoController {
 	}
 
 	@Get('search')
-	searchVideos(@Query('search') value: string) {
-		return this.videoService.searchVideos(value)
+	searchVideos(
+		@Query('search') value: string,
+		@Query('limit') limit: number,
+		@Query('page') page: number
+	) {
+		return this.videoService.searchVideos(value, limit, page)
 	}
 
 	@Post('add')
@@ -60,13 +71,32 @@ export class VideoController {
 		return this.videoService.deleteVideo(id)
 	}
 
+	@Get('trends')
+	getVideosTrends(@Query('limit') limit: number, @Query('page') page: number) {
+		return this.videoService.getVideosTrends(limit, page)
+	}
+
+	@Get('profile')
+	@Auth()
+	getProfileVideos(@CurrentUser() userId: number) {
+		return this.videoService.getProfileVideos(userId)
+	}
+
+	@Get('profile/:username')
+	getProfileVideosByUsername(@Param('username') username: string) {
+		return this.videoService.getProfileVideosByUsername(username)
+	}
+
 	@Get()
-	getVideos() {
-		return this.videoService.getVideos()
+	getVideos(@Query('limit') limit: number, @Query('page') page: number) {
+		return this.videoService.getVideos(limit, page)
 	}
 
 	@Get('byId')
-	getVideoById(@Query('id', ParseIntPipe) id: number) {
-		return this.videoService.getVideoById(id)
+	getVideoById(
+		@Query('id', ParseIntPipe) id: number,
+		@Query('idFrom') idFrom?: number
+	) {
+		return this.videoService.getVideoById(idFrom, id)
 	}
 }
