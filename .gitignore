@@ -14,7 +14,8 @@ lerna-debug.log*
 # Env
 .env
 
-/users
+# DATA dirs
+users
 
 # OS
 .DS_Store
