@@ -75,6 +75,7 @@ export class UserService {
 SELECT
   _user.id,
   _user.username,
+	_user.description,
 	_user.email,
   _user.avatar_path,
   _user.header_path,

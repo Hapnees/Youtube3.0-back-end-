@@ -41,15 +41,6 @@ export class VideoController {
 		return this.videoService.like(userId, id)
 	}
 
-	@Get('search')
-	searchVideos(
-		@Query('search') value: string,
-		@Query('limit') limit: number,
-		@Query('page') page: number
-	) {
-		return this.videoService.searchVideos(value, limit, page)
-	}
-
 	@Post('add')
 	@HttpCode(200)
 	@Auth()
@@ -71,11 +62,6 @@ export class VideoController {
 		return this.videoService.deleteVideo(id)
 	}
 
-	@Get('trends')
-	getVideosTrends(@Query('limit') limit: number, @Query('page') page: number) {
-		return this.videoService.getVideosTrends(limit, page)
-	}
-
 	@Get('profile')
 	@Auth()
 	getProfileVideos(@CurrentUser() userId: number) {
@@ -87,9 +73,24 @@ export class VideoController {
 		return this.videoService.getProfileVideosByUsername(username)
 	}
 
+	@Get('liked')
+	@Auth()
+	getLikedVideos(
+		@CurrentUser() userId: number,
+		@Query('limit') limit: number,
+		@Query('page') page: number
+	) {
+		return this.videoService.getLikedVideos(userId, limit, page)
+	}
+
 	@Get()
-	getVideos(@Query('limit') limit: number, @Query('page') page: number) {
-		return this.videoService.getVideos(limit, page)
+	getVideos(
+		@Query('limit') limit: number,
+		@Query('page') page: number,
+		@Query('search') search: string,
+		@Query('category') category: string
+	) {
+		return this.videoService.getVideos(limit, page, search, category)
 	}
 
 	@Get('byId')
