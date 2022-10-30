@@ -15,9 +15,28 @@ export class UserService {
 	async searchUsers(value: string, limit: number = 12, page: number = 1) {
 		const offset = limit * (page - 1)
 		const _users = await this.userRepo.query(`
-		SELECT username, avatar_path, description, array_length(subscribers, 1) AS "subscribers_count" FROM "User" WHERE username ~* '${value}' LIMIT ${limit} OFFSET ${offset}`)
+		SELECT 
+      username,
+      avatar_path,
+      description,
+      array_length(subscribers, 1) AS "subscribers_count" 
+    FROM 
+      "User" 
+    WHERE 
+      username ~* '${value}' 
+    LIMIT ${limit} 
+    OFFSET ${offset}`)
 
-		return _users
+		const total_count = await this.userRepo.query(`
+    SELECT
+      COUNT(*) 
+    FROM 
+      "User"
+    WHERE
+      username ~* '${value}'
+    `)
+
+		return { users: _users, total_count }
 	}
 
 	async getSubscriptions(userId: number, limit: number = 5) {

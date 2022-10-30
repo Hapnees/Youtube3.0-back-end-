@@ -3,7 +3,6 @@ import {
 	Get,
 	HttpCode,
 	Param,
-	ParseIntPipe,
 	Post,
 	Query,
 	Res,
@@ -38,7 +37,7 @@ export class MediaController {
 	@Auth()
 	uploadVideo(
 		@UploadedFile() file: Express.Multer.File,
-		@CurrentUser() userId
+		@CurrentUser() userId: number
 	) {
 		return this.mediaService.uploadVideo(file, userId)
 	}

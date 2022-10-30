@@ -1,9 +1,4 @@
-import {
-	BadRequestException,
-	ConsoleLogger,
-	Injectable,
-	NotFoundException
-} from '@nestjs/common'
+import { Injectable, NotFoundException } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
 import { VideoGetDto } from './dto/video-get.dto'
@@ -108,11 +103,11 @@ export class VideoService {
 	}
 
 	async addVideo(video: VideoGetDto) {
-		await this.videoRepo.save(video)
+		const _video = await this.videoRepo.save(video)
 
 		return {
 			message: `Видео ${video.title} было успешно добавлено`,
-			username: video.user.username
+			videoId: _video.id
 		}
 	}
 
@@ -132,7 +127,7 @@ export class VideoService {
 		}
 	}
 
-	async deleteVideo({ id }) {
+	async deleteVideo(id: number) {
 		const _video = await this.videoRepo.findOne({
 			where: { id },
 			relations: { user: true }
@@ -227,15 +222,15 @@ ORDER BY
 		;
 		`)
 
-		const totalPages = Math.ceil(
+		const totalCount = Math.ceil(
 			(
 				await this.userRepo.query(`
 		SELECT COUNT(video_liked_id) FROM "User" WHERE id=${userId};
 		`)
-			)[0].count / limit
+			)[0].count
 		)
 
-		return { videos, total_pages: totalPages }
+		return { videos, total_count: totalCount }
 	}
 
 	async getVideos(
@@ -267,15 +262,15 @@ ORDER BY
 			 `
 		)
 
-		const totalPages = Math.ceil(
+		const total_count = Math.ceil(
 			(
 				await this.videoRepo.query(
 					`SELECT COUNT(*) FROM "Video" WHERE title ~* '${search}' AND is_private=FALSE`
 				)
-			)[0].count / limit
+			)[0].count
 		)
 
-		return { videos, total_pages: totalPages }
+		return { videos, total_count: total_count }
 	}
 
 	async getVideoById(idFrom: number = 0, id: number) {
@@ -301,15 +296,7 @@ GROUP BY
 
 		if (!_video) throw new NotFoundException('Видео не найдено')
 
-		if (idFrom) return _video[0]
-
-		const subscribers = (
-			await this.userRepo.query(`
-		SELECT _user.subscribers FROM "Video" _video LEFT JOIN "User" _user ON _user.id=_video.user_id WHERE _video.id=${id};
-		`)
-		)[0].subscribers
-
-		const is_subscribed = subscribers.some(el => el === Number(idFrom))
+		if (!idFrom) return _video[0]
 
 		const Ids = (
 			await this.userRepo.query(`
@@ -325,6 +312,6 @@ GROUP BY
 
 		const result = _video[0]
 
-		return { ...result, is_subscribed, is_liked, is_disliked }
+		return { ...result, is_liked, is_disliked }
 	}
 }
