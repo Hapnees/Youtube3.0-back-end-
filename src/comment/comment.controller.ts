@@ -42,7 +42,7 @@ export class CommentController {
 	}
 
 	@Get('get')
-	getComments(@Query('videoId') videoId: number) {
-		return this.commentService.getComments(videoId)
+	getComments(@Query('videoId') videoId: number, @Query('page') page: number) {
+		return this.commentService.getComments(videoId, page)
 	}
 }

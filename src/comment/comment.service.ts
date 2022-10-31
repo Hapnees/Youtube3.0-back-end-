@@ -93,8 +93,9 @@ export class CommentService {
 		return { commentId: newComment.id }
 	}
 
-	async getComments(videoId: number) {
-		return await this.commentRepo.query(`
+	async getComments(videoId: number, page: number = 1, limit: number = 12) {
+		const offset = limit * (page - 1)
+		const comments = await this.commentRepo.query(`
 		SELECT
   _comment.id,
   _comment.title,
@@ -109,6 +110,14 @@ WHERE
   _comment.video_id = ${videoId}
 ORDER BY
 	_comment.created_at DESC
+LIMIT ${limit}
+OFFSET ${offset}
 `)
+		const totalCount = (
+			await this.commentRepo.query(
+				`SELECT COUNT(*) FROM "Comment" WHERE video_id = ${videoId}`
+			)
+		)[0].count
+		return { comments, total_count: totalCount }
 	}
 }
